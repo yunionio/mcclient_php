@@ -26,31 +26,31 @@ function split_versioned_url($url) {
 }
 
 class Client {
-    private $auth_url;
-    private $timeout;
-    private $debug;
-    private $insecure;
+	private $auth_url;
+	private $timeout;
+	private $debug;
+	private $insecure;
 	private $catalog;
 
-    function __construct($authUrl, $timeout=300, $debug=false, $insecure=true) {
-        $this->auth_url = rtrim($authUrl, "/");
-        $this->timeout = $timeout;
-        $this->debug = $debug;
-        $this->insecure = $insecure;
-    }
+	function __construct($authUrl, $timeout=300, $debug=false, $insecure=true) {
+		$this->auth_url = rtrim($authUrl, "/");
+ 		$this->timeout = $timeout;
+		$this->debug = $debug;
+		$this->insecure = $insecure;
+	}
 
 	function get_auth_url() {
 		return $this->auth_url;
 	}
 
-    function auth_version() {
-        $pos = strrpos($this->auth_url, '/');
-        if ($pos > 0) {
-            return substr($this->auth_url, $pos+1);
-        } else {
-            return "";
-        }
-    }
+	function auth_version() {
+		$pos = strrpos($this->auth_url, '/');
+		if ($pos > 0) {
+			return substr($this->auth_url, $pos+1);
+		} else {
+			return "";
+		}
+	}
 
 	function join_url($baseUrl, $path) {
 		$url = split_versioned_url($baseUrl);
