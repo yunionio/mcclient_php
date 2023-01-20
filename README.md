@@ -3,6 +3,12 @@ Cloudpods PHP SDK
 
 本仓库提供了访问Cloudpods API的PHP SDK。
 
+Manager方法说明
+-----------------
+
+每类资源对应一个Manager，例如虚拟机对应的是 ServerManager。每个资源的Manager都继承于ResourceManager。
+
+ResourceManager实现了一系列方法，对应后端的REST API，具体请参考 src/resources.php。
 
 SDK调用方法
 ----------------
