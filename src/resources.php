@@ -21,46 +21,57 @@ interface IManager {
     public function get_keyword_plural();
     public function get_service_type();
     
+    // 列表
     public function list_items($session, $params);
     public function list_in_context($session, $params, $ctx, $ctxid);
     public function list_in_contexts($session, $params, $ctxs);
 
+    // 获取单个资源的详情
     public function get($session, $id, $params);
     public function get_in_context($session, $id, $params, $ctx, $ctxid);
     public function get_in_contexts($session, $id, $params, $ctxs);
 
+    // 通过head方法获取单个资源的详情，目前只有 images 支持
     public function head($session, $id, $params);
     public function head_in_context($session, $id, $params, $ctx, $ctxid);
     public function head_in_contexts($session, $id, $params, $ctxs);
 
+    // 获取具体某个资源的spec的属性，例如虚拟机的vnc信息等
     public function get_specific($session, $id, $spec, $params);
     public function get_specific_in_context($session, $id, $spec, $params, $ctx, $ctxid);
     public function get_specific_in_contexts($session, $id, $spec, $params, $ctxs);
 
+    // 创建资源
     public function create($session, $params);
     public function create_in_context($session, $params, $ctx, $ctxid);
     public function create_in_contexts($session, $params, $ctxs);
 
+    // 批量创建资源
     public function batch_create($session, $params, $count);
     public function batch_create_in_context($session, $params, $count, $ctx, $ctxid);
     public function batch_create_in_contexts($session, $params, $count, $ctxs);
 
+    // 更新资源属性
     public function put($session, $id, $params);
     public function put_in_context($session, $id, $params, $ctx, $ctxid);
     public function put_in_contexts($session, $id, $params, $ctxs);
 
+    // 更新资源属性，只有少数资源支持
     public function patch($session, $id, $params);
     public function patch_in_context($session, $id, $params, $ctx, $ctxid);
     public function patch_in_contexts($session, $id, $params, $ctxs);
 
+    // 执行资源整体的操作，例如 validate_create_data
     public function perform_class_action($session, $action, $params);
     public function perform_class_action_in_context($session, $action, $params, $ctx, $ctxid);
     public function perform_class_action_in_contexts($session, $action, $params, $ctxs);
 
+    // 执行某个资源的操作的方法，例如开机，perform_action($s, $srv_id, "start", $params)
     public function perform_action($session, $id, $action, $params);
     public function perform_action_in_context($session, $id, $action, $params, $ctx, $ctxid);
     public function perform_action_in_contexts($session, $id, $action, $params, $ctxs);
 
+    // 删除某个具体资源
     public function delete_item($session, $id, $query, $body);
     public function delete_in_context($session, $id, $query, $body, $ctx, $ctxid);
     public function delete_in_contexts($session, $id, $query, $body, $ctxs);
