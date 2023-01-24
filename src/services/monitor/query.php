@@ -13,11 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+function recusive_ksort($a) {
+     if (is_array($a)) {
+        ksort($a);
+        foreach ($a as $k=>$v) {
+            $a[$k] = recusive_ksort($v);
+        }
+    }
+    return $a;
+}
+
 function monitor_signature($body) {
     if (array_key_exists("signature", $body)) {
         unset($body["signature"]);
     }
-    ksort($body, SORT_STRING);
+    $body = recusive_ksort($body);
     $jbody = json_encode($body, JSON_UNESCAPED_UNICODE);
     $sig = hash('sha256', $jbody);
     $body["signature"] = $sig;
