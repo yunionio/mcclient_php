@@ -91,13 +91,15 @@ class MetricQuery {
     private $measurement;
     private $field;
     private $alias;
+    private $aggr_func;
 
-    public function __construct($measurement, $field, $alias, $idkey, $idvalue) {
+    public function __construct($measurement, $field, $alias, $idkey, $idvalue, $aggr_func='mean') {
         $this->id_key = $idkey;
         $this->id_value = $idvalue;
         $this->measurement = $measurement;
         $this->field = $field;
         $this->alias = $alias;
+        $this->aggr_func = $aggr_func;
     }
 
     function query() {
@@ -110,7 +112,7 @@ class MetricQuery {
                         "params"=>array($this->field),
                     ),
                     array(
-                        "type"=>"mean",
+                        "type"=>$this->aggr_func,
                         "params"=>array(),
                     ),
                     array(
