@@ -103,6 +103,13 @@ class MetricQuery {
     }
 
     function query() {
+        if (is_array($this->id_value)) {
+            $op = "=~";
+            $val = "/".implode("|", $this->id_value)."/";
+        } else {
+            $op = "=";
+            $val = $this->id_value;
+        }
         return array(
             "measurement"=>$this->measurement,
             "select"=>array(
@@ -124,8 +131,8 @@ class MetricQuery {
             "tags"=>array(
                 array(
                     "key"=>$this->id_key,
-                    "value"=>$this->id_value,
-                    "operator"=>"=",
+                    "value"=>$val,
+                    "operator"=>$op,
                 ),
             ),
             "group_by"=>array(
