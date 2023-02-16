@@ -15,12 +15,23 @@
 
 function recusive_ksort($a) {
      if (is_array($a)) {
-        ksort($a);
-        foreach ($a as $k=>$v) {
-            $a[$k] = recusive_ksort($v);
-        }
+         if (isset($a[0])) {
+             sort($a);
+             for ($i = 0; $i < count($a); $i++) {
+                 $a[$i] = recusive_ksort($a[$i]);
+             }
+         } else {
+             ksort($a);
+             foreach ($a as $k=>$v) {
+                 $a[$k] = recusive_ksort($v);
+             }
+         }
     }
     return $a;
+}
+
+function jsonize($body) {
+    return str_replace("\\/", "/", json_encode($body, JSON_UNESCAPED_UNICODE));
 }
 
 function monitor_signature($body) {
@@ -28,7 +39,7 @@ function monitor_signature($body) {
         unset($body["signature"]);
     }
     $body = recusive_ksort($body);
-    $jbody = json_encode($body, JSON_UNESCAPED_UNICODE);
+    $jbody = jsonize($body);
     $sig = hash('sha256', $jbody);
     $body["signature"] = $sig;
     return $body;
@@ -184,7 +195,9 @@ class Query {
 if (!debug_backtrace()) {
     $q = new Query("24h", "5m");
     $q->add_metric("vm_diskio", "read_bps", "磁盘读速率", "vm_id", "ab9502de-c6b6-4150-880b-d0e3e6ba8ec8");
-    print(json_encode($q->query()));
+    print(jsonize($q->query()));
+    $q->add_metric("vm_diskio", "read_bps", "磁盘读速率", "vm_id", array("ab9502de-c6b6-4150-880b-d0e3e6ba8ec8", "ab9502de-c6b6-4150-880b-d0e3e6ba8ec9"));
+    print(jsonize($q->query()));
 
     /*$mon = new UnifiedMonitorManager();
     $params = $q->query();
