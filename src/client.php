@@ -184,7 +184,7 @@ class Client {
 			$project["name"] = $project_name;
 			if (strlen($project_domain) > 0) {
 				$project["domain"] = array(
-					"name"=>$project_name,
+					"name"=>$project_domain,
 				);
 			} else {
 				$project["domain"] = array(
