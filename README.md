@@ -30,14 +30,15 @@ $passwd = "passw0rd";
 $project_name = "system";
 $project_id = "";
 $project_domain = "Default";
+$token = "";
 $region = "YunionHQ";
 $endpointType = "public";
 
 # 获得token
-$token = $client->auth($domain_name, $uname, $passwd, $project_id, $project_name, $project_domain);
+$token = $client->auth($domain_name, $uname, $passwd, $project_id, $project_name, $project_domain, $token);
 
 # 获得session
-$s = $client->get_session($token, $endpointType);
+$s = $client->get_session($token, $endpointType, $region, "");
 
 $imgman = new ImageManager()
 # List all public images

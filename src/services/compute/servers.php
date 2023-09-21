@@ -14,7 +14,7 @@
 // limitations under the License.
 
 include_once("base.php");
-include_once(__DIR__."../../utils/crypt.php");
+include_once(__DIR__."/../../utils/crypt.php");
 
 class ServerManager extends ComputeManager {
     public function __construct() {
