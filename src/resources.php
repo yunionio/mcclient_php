@@ -15,7 +15,7 @@
 
 include_once("base.php");
 
-interface IManager {
+interface IBaseManager {
     public function get_version();
     public function get_keyword();
     public function get_keyword_plural();
@@ -23,6 +23,10 @@ interface IManager {
     
     // 列表
     public function list_items($session, $params);
+}
+
+interface IManager extends IBaseManager {
+    // 列表
     public function list_in_context($session, $params, $ctx, $ctxid);
     public function list_in_contexts($session, $params, $ctxs);
 
@@ -91,7 +95,7 @@ function NewContext($m, $id) {
     return new ManagerContext($m, $id);
 }
 
-class ResourceManager extends BaseManager implements IManager {
+class BaseResourceManager extends BaseManager {
     private $keyword;
     private $keyword_plural;
 
@@ -107,6 +111,13 @@ class ResourceManager extends BaseManager implements IManager {
 
     function get_keyword_plural() {
         return $this->keyword_plural;
+    }
+}
+
+class ResourceManager extends BaseResourceManager implements IManager {
+
+    function __construct($service, $version, $keyword, $keyword_plural) {
+        parent::__construct($service, $version, $keyword, $keyword_plural);
     }
 
     function url_path() {
@@ -146,7 +157,7 @@ class ResourceManager extends BaseManager implements IManager {
             $qs = http_build_query($params);
             $path = $path."?".$qs;
         }
-        return $this->_list($session, $path, $this->keyword_plural);
+        return $this->_list($session, $path, $this->get_keyword_plural());
     }
 
     function get($session, $id, $params) {
@@ -163,7 +174,7 @@ class ResourceManager extends BaseManager implements IManager {
             $qs = http_build_query($params);
             $path = $path."?".$qs;
         }
-        return $this->_get($session, $path, $this->keyword);
+        return $this->_get($session, $path, $this->get_keyword());
     }
 
     function head($session, $id, $params) {
@@ -180,7 +191,7 @@ class ResourceManager extends BaseManager implements IManager {
             $qs = http_build_query($params);
             $path = $path."?".$qs;
         }
-        return $this->_head($session, $path, $this->keyword);
+        return $this->_head($session, $path, $this->get_keyword());
     }
 
     function get_specific($session, $id, $spec, $params) {
@@ -197,7 +208,7 @@ class ResourceManager extends BaseManager implements IManager {
             $qs = http_build_query($params);
             $path = $path."?".$qs;
         }
-        return $this->_get($session, $path, $this->keyword);
+        return $this->_get($session, $path, $this->get_keyword());
     }
 
     function params2body($params, $key) {
@@ -218,7 +229,7 @@ class ResourceManager extends BaseManager implements IManager {
 
     function create_in_contexts($session, $params, $ctxs) {
         $path = "/".$this->context_path($ctxs);
-        return $this->_post($session, $path, $this->params2body($params, $this->keyword), $this->keyword);
+        return $this->_post($session, $path, $this->params2body($params, $this->get_keyword()), $this->get_keyword());
     }
 
     function batch_create($session, $params, $count) {
@@ -231,9 +242,9 @@ class ResourceManager extends BaseManager implements IManager {
 
     function batch_create_in_contexts($session, $params, $count, $ctxs) {
         $path = "/".$this->context_path($ctxs);
-        $body = $this->params2body($params, $this->keyword);
+        $body = $this->params2body($params, $this->get_keyword());
         $body["count"] = $count;
-        return $this->_post($session, $path, $body, $this->keyword_plural);
+        return $this->_post($session, $path, $body, $this->get_keyword_plural());
     }
 
     function put($session, $id, $params) {
@@ -246,8 +257,8 @@ class ResourceManager extends BaseManager implements IManager {
 
     function put_in_contexts($session, $id, $params, $ctxs) {
         $path = "/".$this->context_path($ctxs)."/".urlencode($id);
-        $body = $this->params2body($params, $this->keyword);
-        return $this->_put($session, $path, $body, $this->keyword);
+        $body = $this->params2body($params, $this->get_keyword());
+        return $this->_put($session, $path, $body, $this->get_keyword());
     }
 
     function patch($session, $id, $params) {
@@ -260,8 +271,8 @@ class ResourceManager extends BaseManager implements IManager {
 
     function patch_in_contexts($session, $id, $params, $ctxs) {
         $path = "/".$this->context_path($ctxs)."/".urlencode($id);
-        $body = $this->params2body($params, $this->keyword);
-        return $this->_patch($session, $path, $body, $this->keyword);
+        $body = $this->params2body($params, $this->get_keyword());
+        return $this->_patch($session, $path, $body, $this->get_keyword());
     }
 
     public function perform_class_action($session, $action, $params) {
@@ -274,8 +285,8 @@ class ResourceManager extends BaseManager implements IManager {
 
     public function perform_class_action_in_contexts($session, $action, $params, $ctxs) {
         $path = "/".$this->context_path($ctxs)."/".urlencode($action);
-        $body = $this->params2body($params, $this->keyword_plural);
-        return $this->_post($session, $path, $body, $this->keyword_plural);
+        $body = $this->params2body($params, $this->get_keyword_plural());
+        return $this->_post($session, $path, $body, $this->get_keyword_plural());
     }
 
     function perform_action($session, $id, $action, $params) {
@@ -288,8 +299,8 @@ class ResourceManager extends BaseManager implements IManager {
 
     function perform_action_in_contexts($session, $id, $action, $params, $ctxs) {
         $path = "/".$this->context_path($ctxs)."/".urlencode($id)."/".urlencode($action);
-        $body = $this->params2body($params, $this->keyword);
-        return $this->_post($session, $path, $body, $this->keyword);
+        $body = $this->params2body($params, $this->get_keyword());
+        return $this->_post($session, $path, $body, $this->get_keyword());
     }
 
     function delete_item($session, $id, $query, $params) {
@@ -306,8 +317,8 @@ class ResourceManager extends BaseManager implements IManager {
             $qs = http_build_query($query);
             $path = $path."?".$qs;
         }
-        $body = $this->params2body($params, $this->keyword);
-        return $this->_post($session, $path, $body, $this->keyword);
+        $body = $this->params2body($params, $this->get_keyword());
+        return $this->_post($session, $path, $body, $this->get_keyword());
     }
 }
 

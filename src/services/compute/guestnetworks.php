@@ -14,17 +14,12 @@
 // limitations under the License.
 
 include_once(__DIR__."/../../resources.php");
-include_once(__DIR__."/../../joint.php");
+include_once(__DIR__."/servers.php");
+include_once(__DIR__."/networks.php");
 
-class ComputeManager extends ResourceManager {
-    public function __construct($keyword, $keyword_plural) {
-        parent::__construct("compute", "", $keyword, $keyword_plural);
-    }
-}
-
-class ComputeJointManager extends JointResourceManager {
-    public function __construct($keyword, $keyword_plural, $master, $slave) {
-        parent::__construct("compute", "", $keyword, $keyword_plural, $master, $slave);
+class GuestNetworkManager extends ComputeJointManager {
+    public function __construct() {
+        parent::__construct("guestnetwork", "guestnetworks", new ServerManager(), new NetworkManager());
     }
 }
 
