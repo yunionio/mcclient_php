@@ -1,7 +1,31 @@
-Cloudpods PHP SDK
+# Cloudpods PHP SDK
 ======================
 
+[![PHP Static Analysis](https://github.com/yunionio/mcclient_php/workflows/PHP%20Static%20Analysis/badge.svg)](https://github.com/yunionio/mcclient_php/actions?query=workflow%3A%22PHP+Static+Analysis%22)
+
 本仓库提供了访问Cloudpods API的PHP SDK。
+
+## 代码质量
+
+### 静态代码分析
+
+本项目配置了完整的 PHP 静态代码分析工具：
+
+- **GitHub Actions**: 自动运行静态分析检查
+- **本地检查**: 使用 `./scripts/static-analysis.sh` 脚本
+- **检查工具**: PHPStan, PHP_CodeSniffer, 语法检查
+
+详细说明请参考：[静态分析文档](docs/static-analysis.md)
+
+### 快速检查
+
+```bash
+# 运行本地静态分析
+./scripts/static-analysis.sh
+
+# 只检查语法
+find src/ examples/ -name "*.php" -exec php -l {} \;
+```
 
 Manager方法说明
 -----------------
@@ -41,14 +65,36 @@ $token = $client->auth($domain_name, $uname, $passwd, $project_id, $project_name
 $s = $client->get_session($token, $endpointType, $region, "");
 
 $imgman = new ImageManager()
+
+# 镜像预留示例
+$reserve_params = array(
+    "name" => "my-ubuntu-image",
+    "disk_format" => "qcow2",
+    "container_format" => "bare",
+    "min_disk" => 20,
+    "min_ram" => 1024,
+    "properties" => array(
+        "os_type" => "Linux",
+        "os_distribution" => "Ubuntu"
+    )
+);
+$reserved_image = $imgman->create($s, $reserve_params);
+$img_id = $reserved_image["id"];
+
+// 字符串上传（小数据）
+$test_data = "This is a test string";
+$uploaded_image = $image_manager->upload($session, $upload_params, $test_data, strlen($test_data));
+
+// 文件流上传（大文件，避免内存溢出）
+$file_handle = fopen($image_file_path, 'rb');
+$uploaded_image = $image_manager->upload($session, $upload_params, $file_handle, $file_size);
+fclose($file_handle);
+
 # List all public images
-$img_results = $imgman.list_items($s, ["is_public"=>false, "status"=>"active"])
+$img_results = $imgman->list_items($s, ["is_public"=>false, "status"=>"active"]);
 if (count($img_results->Data) === 0) {
     die("no image found");
 }
-
-# Create a guest server with the 1st image in the list
-$img_id = $img_results->Data[0]["id"];
 
 $params = array();
 $params['generate_name'] = 'test' # or params['name'] = 'test'

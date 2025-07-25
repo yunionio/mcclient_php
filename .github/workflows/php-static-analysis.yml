@@ -1,0 +1,217 @@
+name: PHP Static Code Analysis
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        php-version: ['7.4', '8.0', '8.1', '8.2']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: curl, json, mbstring, openssl
+        coverage: none
+        
+    - name: Install PHPStan
+      run: |
+        wget https://github.com/phpstan/phpstan/releases/latest/download/phpstan.phar
+        chmod +x phpstan.phar
+        sudo mv phpstan.phar /usr/local/bin/phpstan
+        
+    - name: Install PHP_CodeSniffer
+      run: |
+        composer global require squizlabs/php_codesniffer
+        echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
+        
+    - name: Create PHPStan configuration
+      run: |
+        cat > phpstan.neon << 'EOF'
+        parameters:
+          level: 3
+          paths:
+            - src/
+            - examples/
+          excludePaths:
+            - src/vendor/
+          checkMissingIterableValueType: false
+          checkGenericClassInNonGenericObjectType: false
+          ignoreErrors:
+            - '#Call to an undefined method [a-zA-Z0-9\\_]+::[a-zA-Z0-9\\_]+\(\)#'
+            - '#Access to an undefined property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+#'
+            - '#Undefined variable \$[a-zA-Z0-9\\_]+#'
+            - '#Undefined constant [a-zA-Z0-9\\_]+#'
+        EOF
+        
+    - name: Run PHPStan
+      run: phpstan analyse --no-progress
+      
+    - name: Create PHP_CodeSniffer configuration
+      run: |
+        cat > phpcs.xml << 'EOF'
+        <?xml version="1.0"?>
+        <ruleset name="Cloudpods PHP SDK">
+          <description>PHP_CodeSniffer rules for Cloudpods PHP SDK</description>
+          
+          <!-- Include all files in src and examples directories -->
+          <file>src/</file>
+          <file>examples/</file>
+          
+          <!-- Exclude vendor directory -->
+          <exclude-pattern>*/vendor/*</exclude-pattern>
+          
+          <!-- Use PSR-12 standard -->
+          <rule ref="PSR12"/>
+          
+          <!-- Custom rules -->
+          <rule ref="Generic.Files.LineLength">
+            <properties>
+              <property name="lineLimit" value="120"/>
+              <property name="absoluteLineLimit" value="150"/>
+            </properties>
+          </rule>
+          
+          <!-- Ignore some common issues for this project -->
+          <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
+            <exclude-pattern>*/examples/*</exclude-pattern>
+          </rule>
+          
+          <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+            <exclude-pattern>*/examples/*</exclude-pattern>
+          </rule>
+          
+          <!-- Allow short array syntax for this project -->
+          <rule ref="Generic.Arrays.DisallowShortArraySyntax">
+            <exclude-pattern>*</exclude-pattern>
+          </rule>
+        </ruleset>
+        EOF
+        
+    - name: Run PHP_CodeSniffer
+      run: phpcs --standard=phpcs.xml --colors
+      
+    - name: Check for syntax errors
+      run: |
+        echo "Checking PHP syntax..."
+        find src/ examples/ -name "*.php" -exec php -l {} \;
+        
+    - name: Run basic linting
+      run: |
+        echo "Running basic linting checks..."
+        find src/ examples/ -name "*.php" -exec php -r "
+          \$file = \$argv[1];
+          \$content = file_get_contents(\$file);
+          
+          // Check for common issues
+          \$issues = [];
+          
+          // Check for unclosed quotes
+          if (substr_count(\$content, '\"') % 2 !== 0) {
+            \$issues[] = 'Unclosed double quotes';
+          }
+          if (substr_count(\$content, \"'\") % 2 !== 0) {
+            \$issues[] = 'Unclosed single quotes';
+          }
+          
+          // Check for unclosed brackets
+          if (substr_count(\$content, '{') !== substr_count(\$content, '}')) {
+            \$issues[] = 'Unclosed braces';
+          }
+          if (substr_count(\$content, '(') !== substr_count(\$content, ')')) {
+            \$issues[] = 'Unclosed parentheses';
+          }
+          
+          // Check for missing semicolons (basic check)
+          \$lines = explode(\"\\n\", \$content);
+          foreach (\$lines as \$lineNum => \$line) {
+            \$line = trim(\$line);
+            if (!empty(\$line) && !preg_match('/^[\/\*#\s\{\}\(\)\[\]]/', \$line)) {
+              if (!preg_match('/[;\{\}]$/', \$line)) {
+                \$issues[] = 'Possible missing semicolon on line ' . (\$lineNum + 1);
+              }
+            }
+          }
+          
+          if (!empty(\$issues)) {
+            echo \"Issues found in \$file:\\n\";
+            foreach (\$issues as \$issue) {
+              echo \"  - \$issue\\n\";
+            }
+            exit(1);
+          }
+        " {} \;
+        
+    - name: Check file structure
+      run: |
+        echo "Checking file structure..."
+        echo "PHP files found:"
+        find src/ examples/ -name "*.php" | wc -l
+        echo "Directories:"
+        find src/ examples/ -type d | sort
+        
+    - name: Check for common PHP issues
+      run: |
+        echo "Checking for common PHP issues..."
+        find src/ examples/ -name "*.php" -exec php -r "
+          \$file = \$argv[1];
+          \$content = file_get_contents(\$file);
+          
+          // Check for potential issues
+          \$warnings = [];
+          
+          // Check for hardcoded paths
+          if (preg_match('/\/home\/|\/var\/|\/tmp\//', \$content)) {
+            \$warnings[] = 'Hardcoded paths detected';
+          }
+          
+          // Check for debug code
+          if (preg_match('/var_dump\(|print_r\(|die\(|exit\(/', \$content)) {
+            \$warnings[] = 'Debug code detected (var_dump, print_r, die, exit)';
+          }
+          
+          // Check for potential security issues
+          if (preg_match('/eval\(|exec\(|system\(|shell_exec\(/', \$content)) {
+            \$warnings[] = 'Potentially dangerous functions detected';
+          }
+          
+          if (!empty(\$warnings)) {
+            echo \"Warnings in \$file:\\n\";
+            foreach (\$warnings as \$warning) {
+              echo \"  - \$warning\\n\";
+            }
+          }
+        " {} \;
+        
+    - name: Generate analysis report
+      if: always()
+      run: |
+        echo "## PHP Static Analysis Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**PHP Version:** ${{ matrix.php-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Analysis Date:** $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Analysis Tools Used:" >> $GITHUB_STEP_SUMMARY
+        echo "- PHPStan (Level 3)" >> $GITHUB_STEP_SUMMARY
+        echo "- PHP_CodeSniffer (PSR-12)" >> $GITHUB_STEP_SUMMARY
+        echo "- PHP Syntax Check" >> $GITHUB_STEP_SUMMARY
+        echo "- Basic Linting" >> $GITHUB_STEP_SUMMARY
+        echo "- Security Checks" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Directories Analyzed:" >> $GITHUB_STEP_SUMMARY
+        echo "- src/" >> $GITHUB_STEP_SUMMARY
+        echo "- examples/" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Files Checked:" >> $GITHUB_STEP_SUMMARY
+        find src/ examples/ -name "*.php" | wc -l | xargs echo "- Total PHP files:" >> $GITHUB_STEP_SUMMARY 

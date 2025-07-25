@@ -141,7 +141,7 @@ class Catalog {
                             return $eps;
                         }
                     } else {
-                        die("No default region for region(".$region.") zone(".$zone.")");
+                        throw new Exception("No default region for region(".$region.") zone(".$zone.")");
                     }
                 } else {
                     if (array_key_exists($regionzone, $regeps)) {
@@ -149,7 +149,7 @@ class Catalog {
                     } else if (array_key_exists($region, $regeps)) {
                         return $regeps[$region];
                     } else {
-                        die("No valid ".$endpointType." endpoints for ".$service." in region ".get_region_id($region, $zone));
+                        throw new Exception("No valid ".$endpointType." endpoints for ".$service." in region ".get_region_id($region, $zone));
                     }
                 }
             }

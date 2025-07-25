@@ -199,10 +199,7 @@ if (!debug_backtrace()) {
     $q->add_metric("vm_diskio", "read_bps", "磁盘读速率", "vm_id", array("ab9502de-c6b6-4150-880b-d0e3e6ba8ec8", "ab9502de-c6b6-4150-880b-d0e3e6ba8ec9"));
     print(jsonize($q->query()));
 
-    /*$mon = new UnifiedMonitorManager();
-    $params = $q->query();
-    print_r($mon->query($s, $params));
-    */
+
 }
 
 ?>
