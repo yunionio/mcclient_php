@@ -108,7 +108,7 @@ class Client {
 		);
 
 		$read_only = false;
-		if (strcmp($method, "GET") === 0) {
+		if (strcmp($method, "GET") === 0 || strcmp($method, "HEAD") === 0) {
 			// do nothing
 			$read_only = true;
 		} else if (strcmp($method, "POST") === 0) {
@@ -117,22 +117,36 @@ class Client {
 		} else if (strcmp($method, "PUT") === 0 || strcmp($method, "PATCH") === 0 || strcmp($method, "DELETE") === 0) {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 		}
+		
 		if (!$read_only) {
-			if (strlen($body) > 0) {
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+			if ($body !== null) {
+				// 检测 $body 是否为文件句柄
+				if (is_resource($body) && get_resource_type($body) === 'stream') {
+					// 使用文件流上传，避免内存溢出
+					curl_setopt($ch, CURLOPT_INFILE, $body);
+					curl_setopt($ch, CURLOPT_INFILESIZE, filesize(stream_get_meta_data($body)['uri']));
+					curl_setopt($ch, CURLOPT_UPLOAD, true);
+				} else {
+					// 使用字符串上传
+					curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+				}
 			} else {
 				array_push($header, "Content-Length: 0");
-			}	
+			}
 		}
 
 		$result = curl_exec($ch);
 		$err = curl_error($ch);
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 		curl_close($ch);
 
 		if ($err) {
-			print("Error: " + $err);
+			throw new Exception("Error: " + $err);
 		} else {
+			if ($statusCode >= 400) {
+				throw new Exception("HTTP $statusCode: $result", $statusCode);
+			}
 			return [$headers, $result];
 		}
 	}
