@@ -1,0 +1,53 @@
+{
+    "name": "yunion/cloudpods-php-sdk",
+    "description": "PHP SDK for Cloudpods API",
+    "type": "library",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Yunion Team",
+            "email": "dev@yunion.io"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10",
+        "squizlabs/php_codesniffer": "^3.7",
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Yunion\\Cloudpods\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Yunion\\Cloudpods\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage",
+        "phpstan": "phpstan analyse",
+        "phpcs": "phpcs --standard=PSR12 src/ examples/",
+        "phpcbf": "phpcbf --standard=PSR12 src/ examples/",
+        "lint": "find src/ examples/ -name '*.php' -exec php -l {} \\;",
+        "check": [
+            "@lint",
+            "@phpstan",
+            "@phpcs"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+} 

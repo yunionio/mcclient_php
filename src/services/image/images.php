@@ -64,7 +64,7 @@ class ImageManager extends BaseImageManager {
             $method = "PUT";
         } else {
             if (!isset($params["name"]) && !isset($params["generate_name"])) {
-                die("Missing parameter: name or generate_name");
+                throw new Exception("Missing parameter: name or generate_name");
             }
         }
 
@@ -75,7 +75,7 @@ class ImageManager extends BaseImageManager {
         
         if (strlen($copy_from_url) > 0) {
             if ($size != 0) {
-                die("Can't use copy_from and upload file at the same time");
+                throw new Exception("Cannot use copy_from and upload file at the same time");
             }
             $body = null;
             $size = 0;
@@ -95,11 +95,11 @@ class ImageManager extends BaseImageManager {
         $response_json = json_decode($response_body, true);
         
         if ($response_json === null) {
-            die("Invalid JSON response");
+            throw new Exception("Invalid JSON response");
         }
         
         if (!isset($response_json["image"])) {
-            die("Invalid response: missing 'image' field: " . $response_body);
+            throw new Exception("Invalid response: missing image field: " . $response_body);
         }
         
         return $response_json["image"];

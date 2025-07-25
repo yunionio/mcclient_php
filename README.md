@@ -1,7 +1,31 @@
 # Cloudpods PHP SDK
 ======================
 
+[![PHP Static Analysis](https://github.com/yunionio/mcclient_php/workflows/PHP%20Static%20Analysis/badge.svg)](https://github.com/yunionio/mcclient_php/actions?query=workflow%3A%22PHP+Static+Analysis%22)
+
 本仓库提供了访问Cloudpods API的PHP SDK。
+
+## 代码质量
+
+### 静态代码分析
+
+本项目配置了完整的 PHP 静态代码分析工具：
+
+- **GitHub Actions**: 自动运行静态分析检查
+- **本地检查**: 使用 `./scripts/static-analysis.sh` 脚本
+- **检查工具**: PHPStan, PHP_CodeSniffer, 语法检查
+
+详细说明请参考：[静态分析文档](docs/static-analysis.md)
+
+### 快速检查
+
+```bash
+# 运行本地静态分析
+./scripts/static-analysis.sh
+
+# 只检查语法
+find src/ examples/ -name "*.php" -exec php -l {} \;
+```
 
 Manager方法说明
 -----------------

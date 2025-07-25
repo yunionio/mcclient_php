@@ -90,7 +90,7 @@ class Session {
         $prefix = $this->client->get_auth_url();
         $lastSlashPos = strrpos($prefix, "/api/s/identity");
         if ($lastSlashPos <= 0) {
-            die("invalue auth_url ".$prefix);
+            throw new Exception("Invalid auth_url: " . $prefix);
         }
         $prefix = join_path3(substr($prefix, 0, $lastSlashPos), "api/s", $service);
         if (strlen($region) > 0) {

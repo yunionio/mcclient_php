@@ -22,7 +22,7 @@ class WebconsoleManager extends BaseWebconsoleManager {
 
     function do_connect($s, $connType, $id, $action, $params) {
         if (strlen($connType) === 0) {
-            die("Empty connection resource type");
+            throw new Exception("Empty connection resource type");
         }
         $url = "/webconsole/$connType";
         if (strlen($id) > 0) {

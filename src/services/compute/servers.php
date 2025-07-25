@@ -36,7 +36,7 @@ class ServerManager extends ComputeManager {
                 // 秘钥
                 $ret["keypair"] = $data["keypair"];
                 if (is_null($private_key)) {
-                    die("require private key to decrypt password");
+                    throw new Exception("Private key is required to decrypt password");
                 }
             } else {
                 // 密码

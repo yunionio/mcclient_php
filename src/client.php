@@ -54,12 +54,9 @@ class Client {
 
 	function join_url($baseUrl, $path) {
 		$url = split_versioned_url($baseUrl);
-		print("join_url $baseUrl");
-		print_r($url);
 		if (strlen($url[1]) > 0 && strpos($path, "/".$url[1]."/") === 0) {
 			$baseUrl = $url[0];
 		}
-		print("join_url base $baseUrl path $path\n");
 		return $baseUrl.$path;
 	}
 

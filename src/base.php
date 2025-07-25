@@ -51,10 +51,9 @@ class BaseManager {
 
     function _list($session, $path, $response_key) {
         $result = $this->json_request($session, "GET", $path, null, null);
-        print_r($result);
         $body = $result[1];
         if (!array_key_exists($response_key, $body)) {
-            die("no key ".$response_key." in response");
+            throw new Exception("Response key '$response_key' not found in response");
         }
         $data = $body[$response_key];
         $total = count($data);
